@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: develop
+  creationTimestamp: null
+  labels:
+    app: alert-api
+  name: alert-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alert-api
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: alert-api
+    spec:
+      containers:
+        - image: localhost:5000/alert-api
+          name: alert-api
+          env:
+            - name: TELEGRAM_BOT_TOKEN
+              valueFrom:
+                configMapKeyRef:
+                  name: alert-api
+                  key: TELEGRAM_BOT_TOKEN
+          ports:
+            - name: liveness-port
+              containerPort: 3002
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: liveness-port
+            failureThreshold: 1
+            periodSeconds: 30
+          startupProbe:
+            httpGet:
+              path: /health
+              port: liveness-port
+            failureThreshold: 30
+            periodSeconds: 15

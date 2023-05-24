@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  namespace: develop
+  labels:
+    app: series-cronjob
+  name: series-cronjob
+spec:
+  schedule: '0 8 * * *'
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: series-cronjob
+              image: localhost:5000/series-cronjob
+
+              env:
+                - name: OMDB_API_KEY
+                  valueFrom:
+                    configMapKeyRef:
+                      name: series-cronjob
+                      key: OMDB_API_KEY
+
+                - name: MONGO_URI
+                  valueFrom:
+                    configMapKeyRef:
+                      name: series-cronjob
+                      key: MONGO_URI
+
+          restartPolicy: OnFailure

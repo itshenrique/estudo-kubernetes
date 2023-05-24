@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: develop
+  creationTimestamp: null
+  labels:
+    app: telegram-api
+  name: telegram-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: telegram-api
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: telegram-api
+    spec:
+      containers:
+        - image: localhost:5000/telegram-api
+          name: telegram-api
+          env:
+            - name: TELEGRAM_BOT_TOKEN
+              valueFrom:
+                configMapKeyRef:
+                  name: telegram-api
+                  key: TELEGRAM_BOT_TOKEN
+          ports:
+            - name: liveness-port
+              containerPort: 3001
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: liveness-port
+            failureThreshold: 1
+            periodSeconds: 30
+          startupProbe:
+            httpGet:
+              path: /health
+              port: liveness-port
+            failureThreshold: 30
+            periodSeconds: 15

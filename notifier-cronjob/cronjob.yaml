@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  namespace: develop
+  labels:
+    app: notifier-cronjob
+  name: notifier-cronjob
+spec:
+  schedule: '30 8 * * *'
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: notifier-cronjob
+              image: localhost:5000/notifier-cronjob
+
+              env:
+                - name: MONGO_URI
+                  valueFrom:
+                    configMapKeyRef:
+                      name: notifier-cronjob
+                      key: MONGO_URI
+
+                - name: MESSAGE_API_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: notifier-cronjob
+                      key: MESSAGE_API_URL
+
+          restartPolicy: OnFailure
