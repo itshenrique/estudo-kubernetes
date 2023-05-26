@@ -1,9 +1,16 @@
 const MongoDb = require('./db/mongoDb');
 const SerieRepository = require('./repository/series.repository');
 const { getSerieInfoByName } = require('./service/omdb.service');
-const { getLastSeasonInfo } = require('./service/imdb.service');
+const { getSeasonInfo } = require('./service/imdb.service');
 const { removeTimeZone, now } = require('./util/date');
 const today = now();
+
+function removeTimezoneFromSeason(season) {
+  for (const episode of season.episodes) {
+    episode.airdate = removeTimeZone(episode.airdate);
+  }
+  return season;
+}
 
 async function run() {
   try {
@@ -16,29 +23,22 @@ async function run() {
       if (!serieInfoInOmdb) return;
 
       try {
-        const serieLastSeason = await getLastSeasonInfo(serieInfoInOmdb.imdbID);
-        const hasBeenSaved = serie.seasons.some(
-          (season) => season.number === Number(serieLastSeason.number)
-        );
+        let seasons = [];
+        const serieLastSeason = await getSeasonInfo(serieInfoInOmdb.imdbID);
 
-        const episodes = serieLastSeason.episodes
-          .map((episode) => ({
-            ...episode,
-            airdate: removeTimeZone(episode.airdate),
-          }))
-          .filter(({ airdate }) => airdate >= today);
+        // Regra - Pega a temporada anterior, caso não seja a primeira
+        if (serieLastSeason.number > 1) {
+          const seriePastSeason = await getSeasonInfo(
+            serieInfoInOmdb.imdbID,
+            serieLastSeason.number - 1
+          );
 
-        if (hasBeenSaved) {
-          await seriesCollection.updateLastSeasonByName(serie.uuid, {
-            number: serieLastSeason.number,
-            episodes,
-          });
-        } else {
-          await seriesCollection.createSeasonByName(serie.uuid, {
-            number: serieLastSeason.number,
-            episodes,
-          });
+          seasons.push(removeTimezoneFromSeason(seriePastSeason));
         }
+
+        seasons.push(removeTimezoneFromSeason(serieLastSeason));
+
+        await seriesCollection.updateSeasonsByUuid(serie.uuid, seasons);
       } catch (err) {
         console.error(err);
         console.error('Erro ao buscar dados de ' + serie.uuid);

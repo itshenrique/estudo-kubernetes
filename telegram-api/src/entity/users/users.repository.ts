@@ -45,4 +45,17 @@ export class UsersMongoRepository implements IUserRepository {
 
     return result.modifiedCount === 1;
   }
+
+  async cleanSeriesFromUser(body: Pick<UsersModel, 'uuid'>): Promise<boolean> {
+    const result = await this.usersModel.updateOne(
+      { uuid: body.uuid },
+      {
+        $set: {
+          seriesUuid: [],
+        },
+      },
+    );
+
+    return result.modifiedCount === 1;
+  }
 }

@@ -6,30 +6,17 @@ class SerieRepository {
     return SeriesModel.find();
   }
 
-  async createSeasonByName(uuid, season) {
-    console.log(SerieRepository.name, '- criando temporada na serie');
-    return SeriesModel.updateOne(
-      { uuid },
-      {
-        $push: {
-          seasons: season,
-        },
-      }
-    );
-  }
-
-  async updateLastSeasonByName(uuid, season) {
+  async updateSeasonsByUuid(uuid, seasons) {
     console.log(SerieRepository.name, '- atualizando temporada na serie');
     return SeriesModel.updateOne(
       { uuid },
       {
         $set: {
-          'seasons.$[t].episodes': season.episodes,
+          seasons,
         },
       },
       {
         upsert: true,
-        arrayFilters: [{ 't.number': season.number }],
       }
     );
   }

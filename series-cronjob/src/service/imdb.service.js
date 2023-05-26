@@ -1,11 +1,14 @@
 const axios = require('axios');
 const jsdom = require('jsdom');
 
-async function getLastSeasonInfo(id) {
+async function getSeasonInfo(id, seasonNumber) {
   const { JSDOM } = jsdom;
-  const response = await axios.get(`https://www.imdb.com/title/${id}/episodes`);
+  const query = seasonNumber ? `?season=${seasonNumber}` : '';
+  const response = await axios.get(
+    `https://www.imdb.com/title/${id}/episodes${query}`
+  );
   const dom = new JSDOM(response.data);
-  const seasonNumber = await dom.window.document
+  const seasonNumberHtml = await dom.window.document
     .querySelector('#bySeason [selected="selected"]')
     .textContent.replace(/(\r\n|\n|\r)/gm, '')
     .trim();
@@ -17,10 +20,10 @@ async function getLastSeasonInfo(id) {
   }));
 
   return {
-    number: seasonNumber,
+    number: seasonNumberHtml,
     episodes,
   };
 }
 module.exports = {
-  getLastSeasonInfo,
+  getSeasonInfo,
 };

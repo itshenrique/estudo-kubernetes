@@ -6,9 +6,16 @@ import { EntertainmentDbModule } from './infra/db/entertainmentDb.module';
 import { UsersModule } from './entity/users/users.module';
 import { SeriesModule } from './entity/series/series.module';
 import { OmdbModule } from './omdb/omdb.module';
+import { QuestionModule } from './entity/questions/questions.module';
 
 @Module({
-  imports: [EntertainmentDbModule, UsersModule, SeriesModule, OmdbModule],
+  imports: [
+    EntertainmentDbModule,
+    UsersModule,
+    SeriesModule,
+    QuestionModule,
+    OmdbModule,
+  ],
   providers: [AppService],
   controllers: [AppController, HealthController],
 })
