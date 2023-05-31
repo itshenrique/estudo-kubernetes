@@ -13,7 +13,3 @@ export const atlasMongo = {
   mongoUri: process.env.MONGO_URI,
   mongoConnectionIdentifier: 'connection1',
 };
-
-export const openAi = {
-  chatGPTApiKey: process.env.CHAT_GPT_API_KEY,
-};

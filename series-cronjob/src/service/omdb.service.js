@@ -13,5 +13,5 @@ async function getSerieInfoByImdbKey(imdbId) {
 }
 
 module.exports = {
-  getSerieInfoByName: getSerieInfoByImdbKey,
+  getSerieInfoByImdbKey,
 };

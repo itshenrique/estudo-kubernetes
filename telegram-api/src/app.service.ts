@@ -12,6 +12,7 @@ import { get } from 'lodash';
 import { format } from 'date-fns';
 import { QuestionsMongoRepository } from './entity/questions/questions.repository';
 import { Choice, Question } from './domain/question';
+import { zonedTimeToUtc } from 'date-fns-tz';
 
 @Injectable()
 export class AppService {
@@ -53,6 +54,13 @@ export class AppService {
         case '/cadastrarserie':
           await this.cleanUserQuestion({ user });
           await this.saveSerieOnUser({ id, message: formattedMessage, user });
+          break;
+        case '/apagarserie':
+          await this.deleteSerieFromUserList({
+            id,
+            message: formattedMessage,
+            user,
+          });
           break;
         case '/listarseries':
           await this.cleanUserQuestion({ user });
@@ -165,7 +173,7 @@ export class AppService {
 
     return this.sendMessage({
       telegramId: id,
-      message: 'Serie cadastrada com sucesso!',
+      message: `Serie <b>${serie.name}</b> cadastrada com sucesso!`,
     });
   }
 
@@ -232,7 +240,7 @@ export class AppService {
       user.seriesUuid,
     );
 
-    const seriesMessage = [];
+    const seriesMessage = ['📃 Aqui está sua lista de séries'];
 
     for (const serie of series) {
       const data = this.getLastAndNextEpisodes(serie);
@@ -241,30 +249,36 @@ export class AppService {
 
       if (data.lastEpisode) {
         const formattedDate = format(
-          data.lastEpisode.episodeAirdate,
+          zonedTimeToUtc(
+            data.lastEpisode.episodeAirdate,
+            'America/Los_Angeles',
+          ),
           'dd/MM/yyyy',
         );
         lastSeasonsData.push(
           [
-            `  🔚  Temp. ${data.lastEpisode.seasonNumber} Ep. ${data.lastEpisode.episodeNumber} - ${formattedDate}`,
+            `      ⏹  Temp. ${data.lastEpisode.seasonNumber} Ep. ${data.lastEpisode.episodeNumber} - ${formattedDate}`,
           ].join('\n'),
         );
       }
 
       if (data.nextEpisode) {
         const formattedDate = format(
-          data.nextEpisode.episodeAirdate,
+          zonedTimeToUtc(
+            data.nextEpisode.episodeAirdate,
+            'America/Los_Angeles',
+          ),
           'dd/MM/yyyy',
         );
         lastSeasonsData.push(
           [
-            `  🔜  Temp. ${data.nextEpisode.seasonNumber} Ep. ${data.nextEpisode.episodeNumber} - ${formattedDate}`,
+            `      ⏭  Temp. ${data.nextEpisode.seasonNumber} Ep. ${data.nextEpisode.episodeNumber} - ${formattedDate}`,
           ].join('\n'),
         );
       }
 
       seriesMessage.push(
-        [`<b>${serie.name}</b>`, ...lastSeasonsData].join('\n'),
+        [`📺 <b>${serie.name}</b>`, ...lastSeasonsData].join('\n'),
       );
     }
 
@@ -308,7 +322,7 @@ export class AppService {
                     lookingAtEpisode.seasonNumber === 1
                       ? seasonNumber + 1
                       : seasonNumber,
-                  episodeNumber: lookingAtEpisode.seasonNumber,
+                  episodeNumber: lookingAtEpisode.episodeNumber,
                   episodeAirdate: lookingAtEpisode.episodeAirdate,
                 }
               : null,
@@ -380,7 +394,31 @@ export class AppService {
 
     return this.sendMessage({
       telegramId: id,
-      message: 'Serie cadastrada com sucesso!',
+      message: `Serie <b>${serieInMongo.name}</b> cadastrada com sucesso!`,
+    });
+  }
+
+  async deleteSerieFromUserList({ id, message, user }: ParsedInputMessage) {
+    const serieInMongo = await this.seriesMongoRepository.findByName({
+      name: message,
+    });
+
+    if (!serieInMongo) {
+      return this.sendMessage({
+        telegramId: id,
+        message:
+          'Desculpa, não consegui achar a série. Pode informar novamente',
+      });
+    }
+
+    await this.usersMongoRepository.deleteSerieFromUser(
+      user,
+      serieInMongo.uuid,
+    );
+
+    return this.sendMessage({
+      telegramId: id,
+      message: `Série <b>${serieInMongo.name}</b> removida com sucesso!`,
     });
   }
 }

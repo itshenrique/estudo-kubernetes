@@ -1,6 +1,6 @@
 const MongoDb = require('./db/mongoDb');
 const SerieRepository = require('./repository/series.repository');
-const { getSerieInfoByName } = require('./service/omdb.service');
+const { getSerieInfoByImdbKey } = require('./service/omdb.service');
 const { getSeasonInfo } = require('./service/imdb.service');
 const { removeTimeZone, now } = require('./util/date');
 const today = now();
@@ -19,8 +19,16 @@ async function run() {
     const seriesInMongo = await seriesCollection.findAll();
 
     const promises = seriesInMongo.map(async (serie) => {
-      const serieInfoInOmdb = await getSerieInfoByName(serie.imdbId);
+      const serieInfoInOmdb = await getSerieInfoByImdbKey(serie.imdbId);
+
       if (!serieInfoInOmdb) return;
+
+      const year = serieInfoInOmdb.Year;
+      const hasStartAndFinishYear =
+        /^(2[0-9]{3}|2[0-9]{3})–(2[0-9]{3}|2[0-9]{3})$/.test(year);
+      const hasOnlyStart = /^\d{4}$/.test(year);
+
+      const isFinished = hasStartAndFinishYear || hasOnlyStart;
 
       try {
         let seasons = [];
@@ -38,7 +46,11 @@ async function run() {
 
         seasons.push(removeTimezoneFromSeason(serieLastSeason));
 
-        await seriesCollection.updateSeasonsByUuid(serie.uuid, seasons);
+        await seriesCollection.updateSeasonsByUuid(
+          serie.uuid,
+          isFinished,
+          seasons
+        );
       } catch (err) {
         console.error(err);
         console.error('Erro ao buscar dados de ' + serie.uuid);

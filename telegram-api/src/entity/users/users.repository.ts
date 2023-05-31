@@ -58,4 +58,20 @@ export class UsersMongoRepository implements IUserRepository {
 
     return result.modifiedCount === 1;
   }
+
+  async deleteSerieFromUser(
+    body: Pick<UsersModel, 'uuid'>,
+    seriesUuid: string,
+  ): Promise<boolean> {
+    const result = await this.usersModel.updateOne(
+      { uuid: body.uuid },
+      {
+        $pull: {
+          seriesUuid,
+        },
+      },
+    );
+
+    return result.modifiedCount === 1;
+  }
 }

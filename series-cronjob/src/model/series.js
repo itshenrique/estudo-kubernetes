@@ -6,6 +6,7 @@ const SeriesModel = mongoose.model(
     uuid: { type: String, unique: true, index: true },
     name: { type: String, unique: true, index: true },
     imdbId: { type: String, unique: true, index: true },
+    isFinished: { type: Boolean },
     seasons: [
       {
         number: { type: Number },
