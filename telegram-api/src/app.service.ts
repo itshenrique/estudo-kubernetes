@@ -51,7 +51,7 @@ export class AppService {
       }
 
       switch (command) {
-        case '/cadastrarserie':
+        case '/adicionarserie':
           await this.cleanUserQuestion({ user });
           await this.saveSerieOnUser({ id, message: formattedMessage, user });
           break;
@@ -308,7 +308,7 @@ export class AppService {
         episodeIndex--
       ) {
         const episode = serie.seasons[seasonIndex].episodes[episodeIndex];
-        if (episode.airdate <= today) {
+        if (episode.airdate < today) {
           const hasNextEpisode = get(lookingAtEpisode, 'seasonNumber');
           return {
             lastEpisode: {

@@ -26,6 +26,16 @@ spec:
                 configMapKeyRef:
                   name: telegram-api
                   key: TELEGRAM_BOT_TOKEN
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: telegram-api
+                  key: MONGO_URI
+            - name: OMDB_API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: telegram-api
+                  key: OMDB_API_KEY
           ports:
             - name: liveness-port
               containerPort: 3001
