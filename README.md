@@ -11,7 +11,7 @@ Para os cronjob decidi usar apenas javascript por ser aplicações mais simples.
 
 Cada serviço tem um arquivo <b>run_pipeline.sh</b> que sobe a aplicação em um registry na máquina remota (no meu caso 192.168.0.50) e sobe as aplicações para o kubernetes.
 
-A ideia é utilizar evoluir essa estrutura e adicionar recursos de observabilidade (prometheus e grafana).
+A ideia é utilizar evoluir essa estrutura para utilizar lambdas no lugar dos cronjobs e adicionar recursos de observabilidade (prometheus e grafana).
 
 Abaixo está a estrutura inicial pensada para o projeto.
 
