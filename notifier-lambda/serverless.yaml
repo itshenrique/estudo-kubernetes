@@ -1,0 +1,33 @@
+service: notifier-lambda
+
+frameworkVersion: '3'
+configValidationMode: error
+
+# Load environment variables from .env files (default: false)
+# See https://www.serverless.com/framework/docs/environment-variables
+useDotenv: true
+
+# 'warn' reports deprecations on the go, 'error' will result with an exception being thrown on first approached deprecation
+deprecationNotificationMode: warn:summary
+
+provider:
+  name: aws
+  # Default stage (default: dev)
+  stage: production
+  region: sa-east-1
+  profile: production
+  runtime: nodejs18.x
+  logRetentionInDays: 7
+  memorySize: 128
+  environment:
+    MONGO_URI: ${env:MONGO_URI}
+    TELEGRAM_BOT_TOKEN: ${env:TELEGRAM_BOT_TOKEN}
+
+plugins:
+  - serverless-ignore
+
+functions:
+  notifier:
+    handler: src/notifier.handler
+    events:
+      - schedule: cron(30 8 * * ? *)
