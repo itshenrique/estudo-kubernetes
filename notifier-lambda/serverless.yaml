@@ -1,4 +1,4 @@
-service: notifier-lambda
+service: notifier
 
 frameworkVersion: '3'
 configValidationMode: error

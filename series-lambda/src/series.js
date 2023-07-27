@@ -6,7 +6,7 @@ const { removeTimeZone, now } = require('./util/date');
 
 function removeTimezoneFromSeason(season) {
   for (const episode of season.episodes) {
-    episode.airdate = removeTimeZone(episode.airdate);
+    episode.airdate = episode.airdate ? removeTimeZone(episode.airdate) : null;
   }
   return season;
 }
@@ -52,7 +52,7 @@ exports.handler = async function run(event, context, callback) {
         );
         updatedSeriesNameArray.push(serie.name);
       } catch (err) {
-        console.error('Erro ao buscar dados de ' + serie.uuid);
+        console.error(`Erro ao buscar dados de ${serie.name} - ${serie.uuid}`);
       }
     });
 

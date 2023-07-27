@@ -14,10 +14,13 @@ async function getSeasonInfo(id, seasonNumber) {
     .trim();
   const episodes = [
     ...dom.window.document.querySelectorAll('div .airdate'),
-  ].map((el, index) => ({
-    number: index + 1,
-    airdate: new Date(`${el.textContent}`.replace(/(\r\n|\n|\r)/gm, '').trim()),
-  }));
+  ].map((el, index) => {
+    const airdate = `${el.textContent}`.replace(/(\r\n|\n|\r)/gm, '').trim();
+    return {
+      number: index + 1,
+      airdate: airdate ? new Date(airdate) : null,
+    };
+  });
 
   return {
     number: seasonNumberHtml,
